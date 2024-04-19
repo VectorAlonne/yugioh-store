@@ -1,23 +1,12 @@
 <template>
     <div class="container mt-5">
-        <div class="card-body row" v-if="cardDetails">
-            <div class="col-4">
-                <img :src="cardDetails.image" alt="" />
-                <p class="pt-3 fs-3">This is {{ cardDetails.name }} card</p>
-            </div>
-            <div class="col border border-black">
-                <p class="pt-3 fs-5">{{ cardDetails.name }}</p>
-                <p class="pt-3 fs-5 border-top border-black">
-                    {{ cardDetails.attribute }}
-                </p>
-                <p class="pt-3 fs-5 border-top border-black">{{ cardDetails.level }}</p>
-                <p class="pt-3 fs-5 border-top border-black">{{ cardDetails.type }}</p>
-                <p class="pt-3 fs-5 border-top border-black">
-                    {{ cardDetails.description }}
-                </p>
-                <p class="pt-3 fs-5 border-top border-black">{{ cardDetails.stats }}</p>
-                <p class="pt-3 fs-5 border-top border-black">{{ cardDetails.code }}</p>
-            </div>
+        <div v-if="loading" class="spinner-border" role="status">
+            <span class="sr-only"></span>
+        </div>
+        <div v-else class="card-body row">
+            <template v-if="cardDetails">
+                <CardDetails :card-details="cardDetails" />
+            </template>
         </div>
     </div>
 </template>
@@ -25,10 +14,16 @@
 <script>
 import axios from "axios";
 
+import CardDetails from '../components/cards/CardDetails.vue';
+
 export default {
+    components:{
+        CardDetails
+    },
     data() {
         return {
             cardDetails: null,
+            loading: false,
         };
     },
     mounted() {
@@ -37,9 +32,10 @@ export default {
     },
     methods: {
         getCardDetails(cardId) {
+            this.loading = true;
             console.log("ID de la carta:", cardId);
             axios
-                .get(`http://127.0.0.1:8000/api/cards/${cardId}`)
+                .get(`/cards/${cardId}`)
                 .then((response) => {
                     console.log("Respuesta de la API:", response.data);
                     if (response.data) {
@@ -52,6 +48,8 @@ export default {
                 .catch((error) => {
                     console.error("Error fetching card details:", error);
                     this.cardDetails = null;
+                }).finally(() => {
+                    this.loading = false;
                 });
         },
     },
